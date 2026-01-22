@@ -103,64 +103,40 @@ class LogProcessor(DataProcessor):
 
 
 if __name__ == "__main__":
-    print('=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n')
+    print("\n--- EX0 POLYMORPHIC SELF TEST ---\n")
 
-    print("VALID TESTS\n")
+    # -----------------------
+    # Factory method in the base class
+    # -----------------------
+    def get_processor_for_data(data: Any) -> DataProcessor:
+        """Return the correct processor subclass for the given data."""
+        if isinstance(data, list) and all(isinstance(x, (int, float)) for x in data):
+            return NumericProcessor()
+        elif isinstance(data, str) and ":" in data:
+            return LogProcessor()
+        elif isinstance(data, str):
+            return TextProcessor()
+        else:
+            raise ValueError(f"No suitable processor for data: {data}")
 
-    try:
-        numeric = NumericProcessor()
-        print(numeric.process([1, 2, 3, 4, 5]))
-    except Exception as e:
-        print("Numeric error:", e)
+    # -----------------------
+    # Test data (valid + invalid)
+    # -----------------------
+    test_cases = [
+        [1, 2, 3, 4, 5],                     # valid numeric
+        "Hello Nexus World",                  # valid text
+        "SUCCSESS: Connection established",          # valid log
+        [1, 2, "three"],                      # invalid numeric
+        12345,                                # invalid numeric
+        12.5,                                 # invalid numeric
+        123,                                  # invalid text
+        "INVALID LOG ENTRY",                  # invalid log
+    ]
 
-    print()
-
-    try:
-        text = TextProcessor()
-        print(text.process("Hello Nexus World"))
-    except Exception as e:
-        print("Text error:", e)
-
-    print()
-
-    try:
-        log = LogProcessor()
-        print(log.process("ERROR: Connection timeout"))
-    except Exception as e:
-        print("Log error:", e)
-
-    print("\n INVALID TESTS\n")
-
-    # Invalid numeric (contains text)
-    try:
-        bad_numeric = NumericProcessor()
-        print(bad_numeric.process([1, 2, "three", 4]))
-    except Exception as e:
-        print("Numeric error:", e)
-
-    print()
-
-    # Invalid numeric (not a list)
-    try:
-        bad_numeric2 = NumericProcessor()
-        print(bad_numeric2.process("12345"))
-    except Exception as e:
-        print("Numeric error:", e)
-
-    print()
-
-    # Invalid text (not a string)
-    try:
-        bad_text = TextProcessor()
-        print(bad_text.process(12345))
-    except Exception as e:
-        print("Text error:", e)
-
-    print()
-
-    # Invalid log (missing colon)
-    try:
-        bad_log = LogProcessor()
-        print(bad_log.process("ERROR Connection timeout"))
-    except Exception as e:
-        print("Log error:", e)
+    for data in test_cases:
+        try:
+            processor: DataProcessor = get_processor_for_data(data)
+            print(processor.process(data))
+        except Exception as e:
+            print(f"Error processing {data!r}: {e}")
+        print()  # empty line for readability
